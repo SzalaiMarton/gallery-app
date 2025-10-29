@@ -1,4 +1,4 @@
-let globalIdTracker = 1;
+let globalIdTracker = 0;
 
 export class MediaItem {
     public id: number;
@@ -20,7 +20,7 @@ export class MediaItem {
 export function getMediaFiles() {
     let res: MediaItem[] = [];
     
-    res.push(new MediaItem(require("../assets/picture1.png").uri, false, "Code Code Code", "2025.01.01."));
+    res.push(new MediaItem(require("../assets/picture1.png").uri, false, "Picture 1", "2025.01.01."));
     res.push(new MediaItem("https://picsum.photos/seed/696/3000/2000", false, "Mountains", "2025.01.01."));
     res.push(new MediaItem("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", true, "Bunny", "2025.01.01."))
 

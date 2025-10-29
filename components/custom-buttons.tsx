@@ -1,30 +1,29 @@
-import { useOpenedImage } from "@/utils/opened-image-class";
 import { ReactElement } from "react";
-import { StyleSheet, Text, TouchableOpacity, ViewStyle } from "react-native";
+import { GestureResponderEvent, StyleSheet, Text, TouchableOpacity, ViewStyle } from "react-native";
 import { global_style } from "./global-style";
 
-export function RightButton(props: {openedImageHandler: ReturnType<typeof useOpenedImage>, style?: ViewStyle | ViewStyle[]}): ReactElement {
-    const {openedImageHandler, style} = props;
+export function RightButton(props: {style?: ViewStyle | ViewStyle[], onPressHandler: (event: GestureResponderEvent) => void}): ReactElement {
+    const {onPressHandler, style} = props;
     const rightArrow = ">"
 
     return (
         <TouchableOpacity
-            onPress={() => openedImageHandler.nextImageRight()}
-            style={[styles.ButtonStyle, props.style]}
+            onPress={onPressHandler}
+            style={[styles.ButtonStyle, style]}
         >
             <Text style={styles.TextStyle}>{rightArrow}</Text>
         </TouchableOpacity>
     );
 }
 
-export function LeftButton(props: {openedImageHandler: ReturnType<typeof useOpenedImage>, style?: ViewStyle | ViewStyle[]}): ReactElement {
-    const {openedImageHandler, style} = props;
+export function LeftButton(props: {style?: ViewStyle | ViewStyle[], onPressHandler: (event: GestureResponderEvent) => void}): ReactElement {
+    const {onPressHandler, style} = props;
     const leftArrow = "<"
 
     return (
         <TouchableOpacity
-            onPress={() => openedImageHandler.nextImageLeft()}
-            style={[styles.ButtonStyle, props.style]}
+            onPress={onPressHandler}
+            style={[styles.ButtonStyle, style]}
         >
             <Text style={styles.TextStyle}>{leftArrow}</Text>
         </TouchableOpacity>

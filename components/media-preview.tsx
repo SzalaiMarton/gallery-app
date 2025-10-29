@@ -1,4 +1,4 @@
-import { useOpenedImage } from '@/utils/opened-image-class';
+import { useOpenedMedia } from '@/utils/opened-image-class';
 import { Image } from 'expo-image';
 import { VideoView, useVideoPlayer } from "expo-video";
 import { ReactElement } from "react";
@@ -9,12 +9,12 @@ import { global_style } from "./global-style";
 const MEDIA_NAME_FONT_SIZE = 16;
 const MEDIA_DATE_FONT_SIZE = 12;
 
-
-function openCurrentImage(props: {item: MediaItem, itemWidth: number, openedImageHandler: ReturnType<typeof useOpenedImage>}) {
-    const { item, itemWidth, openedImageHandler } = props;
+function openCurrentImage(props: {item: MediaItem, openedImageHandler: ReturnType<typeof useOpenedMedia>}) {
+    const { item, openedImageHandler } = props;
     
-    openedImageHandler.setCurrentImage(props.item); 
-    openedImageHandler.revealImage();
+    openedImageHandler.changeIndex(item.id);
+    openedImageHandler.changePlayer(item.id);
+    openedImageHandler.revealMedia();
 }
 
 function ImagePreview({uri}: {uri: string}): ReactElement {
@@ -27,10 +27,14 @@ function ImagePreview({uri}: {uri: string}): ReactElement {
     );
 }
 
-function VideoPreview({uri}: {uri: string}) {
+function VideoPreview(props: {uri: string, openedImageHandler: ReturnType<typeof useOpenedMedia>, id: number}): ReactElement {
+    const { uri, openedImageHandler, id } = props;
+    
     const player = useVideoPlayer(uri, (player) => {
         player.loop = false;
         player.staysActiveInBackground = false;
+
+        openedImageHandler.addPlayer(id, player);
     });
 
     return (
@@ -41,11 +45,29 @@ function VideoPreview({uri}: {uri: string}) {
     );
 }
 
-export function MediaPreview(props: {item: MediaItem, itemWidth: number, openedImageHandler: ReturnType<typeof useOpenedImage>}): ReactElement {
+export function MediaPreview(props: {item: MediaItem, itemWidth: number, openedImageHandler: ReturnType<typeof useOpenedMedia>}): ReactElement {
     const { item, itemWidth, openedImageHandler } = props;
 
-    if (props.item.isVideo) {
+    if (item.isVideo) {
         return (
+            <View style={[styles.PreviewBox, {width: itemWidth}]}>
+                <TouchableOpacity 
+                    style={styles.TouchArea}
+                    onPress={() => openCurrentImage(props)}
+                >
+                    <Text style={[styles.MediaText, {fontSize: MEDIA_NAME_FONT_SIZE}]} numberOfLines={1}>
+                        {item.name || 'Media Item'}
+                    </Text>
+                    <View style={styles.MediaContainer}>
+                        <VideoPreview uri={item.uri} id={item.id} openedImageHandler={openedImageHandler}/>
+                    </View>
+                    <Text style={[styles.MediaText, {fontSize: MEDIA_DATE_FONT_SIZE}]} numberOfLines={1}>
+                        {item.date || 'Date'}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        )
+        /*return (
             <View style={[styles.PreviewBox, {width: props.itemWidth}]}>
                 <View style={styles.TouchArea}>
                     <Text style={[styles.MediaText, {fontSize: MEDIA_NAME_FONT_SIZE}]} numberOfLines={1}>
@@ -59,23 +81,23 @@ export function MediaPreview(props: {item: MediaItem, itemWidth: number, openedI
                     </Text>
                 </View>
             </View>
-        )
+        )*/
     }
     else {
         return (
-            <View style={[styles.PreviewBox, {width: props.itemWidth}]}>
+            <View style={[styles.PreviewBox, {width: itemWidth}]}>
                 <TouchableOpacity 
                 style={styles.TouchArea}
                 onPress={() => openCurrentImage(props)}
                 >
                     <Text style={[styles.MediaText, {fontSize: MEDIA_NAME_FONT_SIZE}]} numberOfLines={1}>
-                        {props.item.name || 'Media Item'}
+                        {item.name || 'Media Item'}
                     </Text>
                     <View style={styles.MediaContainer}>
-                            <ImagePreview uri={props.item.uri}/>
+                            <ImagePreview uri={item.uri}/>
                     </View>
                     <Text style={[styles.MediaText, {fontSize: MEDIA_DATE_FONT_SIZE}]} numberOfLines={1}>
-                        {props.item.date || 'Date'}
+                        {item.date || 'Date'}
                     </Text>
                 </TouchableOpacity>
             </View>

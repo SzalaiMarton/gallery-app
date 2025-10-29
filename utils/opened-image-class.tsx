@@ -1,57 +1,59 @@
-import { getMediaFiles, MediaItem } from "@/components/media-file-map";
+import { MediaItem } from "@/components/media-file-map";
+import { VideoPlayer } from "expo-video";
 import { useCallback, useState } from 'react';
 
-export const useOpenedImage = () => {
-    const [currentImage, setCurrentImage] = useState<MediaItem | null>(null);
+export const useOpenedMedia = () => {
+    const [currentMedia, setCurrentMedia] = useState<MediaItem | null>(null);
     const [isVisible, setIsVisible] = useState(false);
-    const [currentImageIndex, changeIndex] = useState(0);
+    const [currentMediaIndex, changeIndex] = useState(0);
+    const [currentPlayer, setCurrentPlayer] = useState<VideoPlayer | null>(null);
+    const [players, setPlayer] = useState<Map<number, VideoPlayer>>(new Map);
 
-    const setCurrentImageHandler = useCallback((image: MediaItem) => {
+    const setCurrentMediaHandler = useCallback((image: MediaItem) => {
         console.log("changing current image");
-        setCurrentImage(image);
+        setCurrentMedia(image);
     }, []);
 
-    const clearCurrentImage = useCallback(() => {
+    const clearCurrentMedia = useCallback(() => {
         console.log("clearing current image");
-        setCurrentImage(null);
+        setCurrentMedia(null);
     }, []);
 
-    const revealImage = useCallback(() => {
+    const revealMedia = useCallback(() => {
         console.log("revealing current image");
         setIsVisible(true);
     }, []);
 
-    const hideImage = useCallback(() => {
+    const hideMedia = useCallback(() => {
         console.log("hiding current image");
         setIsVisible(false);
     }, []);
 
-    const nextImageRight = useCallback(() => {
-        console.log("next image right");
-        const mediaFiles = getMediaFiles();
-        if (currentImageIndex === mediaFiles.length) {
-            changeIndex(0);
-        }
-        setCurrentImage(mediaFiles[currentImageIndex]);
+    const addPlayer = useCallback((id: number, player: VideoPlayer) => {
+        setPlayer(prev => {
+            const newMap = new Map(prev);
+            newMap.set(id, player);
+            return newMap;
+        })
     }, []);
 
-    const nextImageLeft = useCallback(() => {
-        console.log("next image left");
-        const mediaFiles = getMediaFiles();
-        if (currentImageIndex === 0) {
-            changeIndex(mediaFiles.length - 1);
-        }
-        setCurrentImage(mediaFiles[currentImageIndex]);
-    }, []);
+    const changePlayer = useCallback((videoId: number) => {
+        const p = players.get(videoId) || null;
+        setCurrentPlayer(p)
+    }, [players]);
 
     return {
-        currentImage,
+        currentMedia,
         isVisible,
-        setCurrentImage: setCurrentImageHandler,
-        clearCurrentImage,
-        revealImage,
-        hideImage,
-        nextImageLeft,
-        nextImageRight
+        currentMediaIndex,
+        currentPlayer,
+        players,
+        setCurrentMedia: setCurrentMediaHandler,
+        clearCurrentMedia: clearCurrentMedia,
+        revealMedia: revealMedia,
+        hideMedia: hideMedia,
+        changeIndex,
+        changePlayer,
+        addPlayer,
     };
 };

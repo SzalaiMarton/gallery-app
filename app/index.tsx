@@ -2,8 +2,9 @@ import { LeftButton, RightButton } from "@/components/custom-buttons";
 import { global_style } from "@/components/global-style";
 import { getMediaFiles } from "@/components/media-file-map";
 import { MediaPreview } from "@/components/media-preview";
-import { useOpenedImage } from "@/utils/opened-image-class";
+import { useOpenedMedia } from "@/utils/opened-image-class";
 import { Image } from "expo-image";
+import { VideoView } from "expo-video";
 import { useEffect, useState } from "react";
 import {
   Dimensions,
@@ -16,7 +17,7 @@ import {
 } from "react-native";
 
 const MIN_ITEM_WIDTH = 300;
-const ITEM_MARGIN = 8;
+const ITEM_MARGIN = 20;
 
 function useWindowLayout() {
   const [windowSize, setWindowSize] = useState(() => Dimensions.get("window"));
@@ -33,16 +34,41 @@ function useWindowLayout() {
   return {
     width: windowSize.width,
     height: windowSize.height,
-    isSmallScreen: windowSize.width < 700,
+    isSmallScreen: windowSize.width < 1000,
   };
 }
 
 export default function Index() {
   const [layout, setLayout] = useState({ numColumns: 2, itemWidth: 0 });
   const mediaItems = getMediaFiles();
-  const openedImageHandler = useOpenedImage();
+  const openedImageHandler = useOpenedMedia();
   const { width, height, isSmallScreen } = useWindowLayout();
 
+  // Opened Media Index Change
+  useEffect(() => {
+    if (openedImageHandler.currentMediaIndex < 0) {
+      openedImageHandler.changeIndex(mediaItems.length - 1);
+    }
+    else if (openedImageHandler.currentMediaIndex > mediaItems.length - 1) {
+      openedImageHandler.changeIndex(0);
+    }
+  }, [openedImageHandler.currentMediaIndex, openedImageHandler, mediaItems.length]);
+  
+  // Handle media type and setting current media
+  useEffect(() => {
+    const currentIndex = openedImageHandler.currentMediaIndex;
+    if (currentIndex >= 0 && currentIndex < mediaItems.length) {
+      const currentMedia = mediaItems[currentIndex];
+      
+      if (currentMedia.isVideo) {
+        openedImageHandler.changePlayer(currentIndex);
+      }
+      openedImageHandler.setCurrentMedia(currentMedia);
+    }
+  }, [openedImageHandler.currentMediaIndex, openedImageHandler, mediaItems]);
+
+
+  // List NumCol Change
   useEffect(() => {
     const availableWidth = width - ITEM_MARGIN * 2;
     const calculatedColumns = Math.floor(availableWidth / MIN_ITEM_WIDTH);
@@ -68,28 +94,34 @@ export default function Index() {
 
   return (
     <View style={styles.HomeScreen}>
-      <TouchableOpacity onPress={() => openedImageHandler.hideImage()}>
+      <TouchableOpacity onPress={() => openedImageHandler.hideMedia()}>
         <Modal
           transparent={true}
-          style={styles.OpenedImageContainer}
+          style={styles.OpenedMediaContainer}
           visible={openedImageHandler.isVisible}
-          onRequestClose={() => openedImageHandler.hideImage()}
+          onRequestClose={() => openedImageHandler.hideMedia()}
           animationType="fade"
         >
-          <View style={styles.OpenedImageContainer}>
+          <View style={styles.OpenedMediaContainer}>
+
+            {openedImageHandler.currentMedia?.isVideo && openedImageHandler.currentPlayer ? (
+            <VideoView
+              player={openedImageHandler.currentPlayer}
+              style={styles.OpenedMedia}
+            />) : (
             <Image
-              style={styles.OpenedImage}
-              source={{ uri: openedImageHandler.currentImage?.uri }}
+              style={styles.OpenedMedia}
+              source={{ uri: openedImageHandler.currentMedia?.uri }}
               contentFit="contain"
-            />
+            />)}
 
             <RightButton
               style={dynamicButtonStyles.rightButton}
-              openedImageHandler={openedImageHandler}
+              onPressHandler={() => openedImageHandler.changeIndex(openedImageHandler.currentMediaIndex + 1)}
             />
             <LeftButton
               style={dynamicButtonStyles.leftButton}
-              openedImageHandler={openedImageHandler}
+              onPressHandler={() => openedImageHandler.changeIndex(openedImageHandler.currentMediaIndex - 1)}
             />
           </View>
         </Modal>
@@ -120,15 +152,17 @@ const styles = StyleSheet.create({
     backgroundColor: global_style.BackgroundColor.backgroundColor,
   },
   Grid: {
-    padding: ITEM_MARGIN,
+    padding: 8,
+    paddingLeft: ITEM_MARGIN,
+    paddingRight: ITEM_MARGIN,
     alignItems: "center",
   },
-  OpenedImage: {
+  OpenedMedia: {
     flex: 1,
-    width: 400,
+    width: 600,
     alignSelf: "center",
   },
-  OpenedImageContainer: {
+  OpenedMediaContainer: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.7)",
   },
