@@ -7,6 +7,6 @@
 
 ### Screenshots:
   <p align="center">
-    <img src="screenshots/screenshots1.jpg" alt="Screenshot" width="300">
-    <img src="screenshots/screenshots2.jpg" alt="Screenshot" width="300">
+    <img src="screenshots/screenshot1.jpg" alt="Screenshot" width="300">
+    <img src="screenshots/screenshot2.jpg" alt="Screenshot" width="300">
   </p>
