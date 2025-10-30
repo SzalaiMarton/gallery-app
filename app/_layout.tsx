@@ -1,11 +1,12 @@
 import { drawFooter } from "@/components/footer";
+import { global_style } from "@/components/global-style";
 import { drawHeader } from "@/components/header";
 import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RootLayout() {
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: global_style.BackgroundColor.backgroundColor}}>
       {drawHeader("Gallery")}
         <Stack>
           <Stack.Screen

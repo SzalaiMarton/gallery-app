@@ -1,7 +1,8 @@
 import { useOpenedMedia } from '@/utils/opened-image-class';
 import { Image } from 'expo-image';
-import { VideoView, useVideoPlayer } from "expo-video";
-import { ReactElement } from "react";
+import { useVideoPlayer } from "expo-video";
+import * as VideoThumbnails from 'expo-video-thumbnails';
+import { ReactElement, useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { MediaItem } from "../components/media-file-map";
 import { global_style } from "./global-style";
@@ -14,6 +15,7 @@ function openCurrentImage(props: {item: MediaItem, openedImageHandler: ReturnTyp
     
     openedImageHandler.changeIndex(item.id);
     openedImageHandler.changePlayer(item.id);
+    console.log("changing to", item.id)
     openedImageHandler.revealMedia();
 }
 
@@ -27,82 +29,64 @@ function ImagePreview({uri}: {uri: string}): ReactElement {
     );
 }
 
-function VideoPreview(props: {uri: string, openedImageHandler: ReturnType<typeof useOpenedMedia>, id: number}): ReactElement {
-    const { uri, openedImageHandler, id } = props;
-    
-    const player = useVideoPlayer(uri, (player) => {
+function VideoPreviewThumbnail(props: {item: MediaItem, videoUri: string, openedImageHandler: ReturnType<typeof useOpenedMedia>}): ReactElement {
+    const { videoUri, openedImageHandler, item } = props;
+    const [thumbnail, setThumbnail] = useState<string>("");
+
+    const player = useVideoPlayer(videoUri, (player) => {
         player.loop = false;
         player.staysActiveInBackground = false;
 
-        openedImageHandler.addPlayer(id, player);
+        openedImageHandler.addPlayer(item.id, player);
     });
 
+    useEffect(() => {
+      const generateThumbnail = async () => {
+        try {
+          const { uri } = await VideoThumbnails.getThumbnailAsync(videoUri, {
+            time: 10000,
+          });
+          setThumbnail(uri);
+        } catch (e) {
+          console.warn(e);
+        }
+      };
+  
+      generateThumbnail();
+    }, [videoUri]);
+  
     return (
-        <VideoView
-            style={styles.VideoPreview}
-            player={player}
+        <Image 
+            style={styles.ImagePreview}
+            source={{ uri: thumbnail }} 
+            contentFit='contain' 
         />
     );
-}
+  }
 
 export function MediaPreview(props: {item: MediaItem, itemWidth: number, openedImageHandler: ReturnType<typeof useOpenedMedia>}): ReactElement {
     const { item, itemWidth, openedImageHandler } = props;
 
-    if (item.isVideo) {
-        return (
-            <View style={[styles.PreviewBox, {width: itemWidth}]}>
-                <TouchableOpacity 
-                    style={styles.TouchArea}
-                    onPress={() => openCurrentImage(props)}
-                >
-                    <Text style={[styles.MediaText, {fontSize: MEDIA_NAME_FONT_SIZE}]} numberOfLines={1}>
-                        {item.name || 'Media Item'}
-                    </Text>
-                    <View style={styles.MediaContainer}>
-                        <VideoPreview uri={item.uri} id={item.id} openedImageHandler={openedImageHandler}/>
-                    </View>
-                    <Text style={[styles.MediaText, {fontSize: MEDIA_DATE_FONT_SIZE}]} numberOfLines={1}>
-                        {item.date || 'Date'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        )
-        /*return (
-            <View style={[styles.PreviewBox, {width: props.itemWidth}]}>
-                <View style={styles.TouchArea}>
-                    <Text style={[styles.MediaText, {fontSize: MEDIA_NAME_FONT_SIZE}]} numberOfLines={1}>
-                        {props.item.name || 'Media Item'}
-                    </Text>
-                    <View style={styles.MediaContainer}>
-                        <VideoPreview uri={props.item.uri}/>
-                    </View>
-                    <Text style={[styles.MediaText, {fontSize: MEDIA_DATE_FONT_SIZE}]} numberOfLines={1}>
-                        {props.item.date || 'Date'}
-                    </Text>
+    return (
+        <View style={[styles.PreviewBox, {width: itemWidth}]}>
+            <TouchableOpacity 
+            style={styles.TouchArea}
+            onPress={() => openCurrentImage(props)}
+            >
+                <Text style={[styles.MediaText, {fontSize: MEDIA_NAME_FONT_SIZE}]} numberOfLines={1}>
+                    {item.name || 'Media Item'}
+                </Text>
+                <View style={styles.MediaContainer}>
+                   {item.isVideo ? 
+                   (<VideoPreviewThumbnail videoUri={item.uri} openedImageHandler={openedImageHandler} item={item}/>) : 
+                   (<ImagePreview uri={item.uri}/>)}
                 </View>
-            </View>
-        )*/
-    }
-    else {
-        return (
-            <View style={[styles.PreviewBox, {width: itemWidth}]}>
-                <TouchableOpacity 
-                style={styles.TouchArea}
-                onPress={() => openCurrentImage(props)}
-                >
-                    <Text style={[styles.MediaText, {fontSize: MEDIA_NAME_FONT_SIZE}]} numberOfLines={1}>
-                        {item.name || 'Media Item'}
-                    </Text>
-                    <View style={styles.MediaContainer}>
-                            <ImagePreview uri={item.uri}/>
-                    </View>
-                    <Text style={[styles.MediaText, {fontSize: MEDIA_DATE_FONT_SIZE}]} numberOfLines={1}>
-                        {item.date || 'Date'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        );
-    }
+                <Text style={[styles.MediaText, {fontSize: MEDIA_DATE_FONT_SIZE}]} numberOfLines={1}>
+                    {item.date || 'Date'}
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({

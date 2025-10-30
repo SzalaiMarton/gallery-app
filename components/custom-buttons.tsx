@@ -1,31 +1,16 @@
 import { ReactElement } from "react";
-import { GestureResponderEvent, StyleSheet, Text, TouchableOpacity, ViewStyle } from "react-native";
+import { GestureResponderEvent, StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from "react-native";
 import { global_style } from "./global-style";
 
-export function RightButton(props: {style?: ViewStyle | ViewStyle[], onPressHandler: (event: GestureResponderEvent) => void}): ReactElement {
-    const {onPressHandler, style} = props;
-    const rightArrow = ">"
+export function CustomButton(props: {textStyle?: TextStyle | TextStyle[], buttonStyle?: ViewStyle | ViewStyle[], onPressHandler: (event: GestureResponderEvent) => void, buttonText: string}): ReactElement {
+    const {onPressHandler, textStyle, buttonStyle, buttonText} = props;
 
     return (
         <TouchableOpacity
             onPress={onPressHandler}
-            style={[styles.ButtonStyle, style]}
+            style={[styles.ButtonStyle, buttonStyle]}
         >
-            <Text style={styles.TextStyle}>{rightArrow}</Text>
-        </TouchableOpacity>
-    );
-}
-
-export function LeftButton(props: {style?: ViewStyle | ViewStyle[], onPressHandler: (event: GestureResponderEvent) => void}): ReactElement {
-    const {onPressHandler, style} = props;
-    const leftArrow = "<"
-
-    return (
-        <TouchableOpacity
-            onPress={onPressHandler}
-            style={[styles.ButtonStyle, style]}
-        >
-            <Text style={styles.TextStyle}>{leftArrow}</Text>
+            <Text style={[styles.TextStyle, textStyle]}>{buttonText}</Text>
         </TouchableOpacity>
     );
 }
